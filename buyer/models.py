@@ -10,11 +10,6 @@ class Buyer(models.Model):
     address = models.CharField(max_length=100)
 
 
-
-
-
-
-
 # models = database ke andar Tables = models.py ke andar class
 # SQL : structured query langauge
 # ORM : Object Relational Mapping
