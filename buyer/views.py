@@ -1,10 +1,16 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from .models import Buyer
+from django.core.mail import send_mail
+from random import randint
+from django.conf import settings
 # Create your views here.
 
 def index(request):
     return render(request, 'index.html')
+
+def login(request):
+    return render(request, 'login.html')
 
 def about(request):
     return render(request, 'about.html')
@@ -29,8 +35,45 @@ def delete_row(request):
 
 
 def register(request):
-    return render(request, 'register.html')
+    if request.method == 'GET':
+        return render(request, 'register.html')
+    else:
+        try:
+            Buyer.objects.get(email = request.POST['email'])
+            return render(request, 'register.html', {'msg':'Email Already Exists!!'})
+        except:
+            if request.POST['password'] == request.POST['repassword']:
+                global user_data
+                user_data = [
+                    request.POST['first_name'],
+                    request.POST['last_name'],
+                    request.POST['email'],
+                    request.POST['password']
+                 ]             
+                s = "Registration!!!"
+                global c_otp
+                c_otp = randint(1000, 9999)
+                m = f"Hello User!!\nYour OTP is {c_otp}."
+                f = settings.EMAIL_HOST_USER
+                r = [request.POST['email']]
+                send_mail(s,m,f,r)
+                return render(request, 'otp.html', {'msg': 'Check Your MailBox'})
+                
+            else:
+                return render(request, 'register.html', {'msg':'Both Passwords do not Match!!'})
 
+
+def otp(request): 
+    if request.POST['u_otp'] == str(c_otp):
+        Buyer.objects.create(
+            first_name = user_data[0],
+            last_name = user_data[1],
+            email = user_data[2],
+            password = user_data[3]
+        )
+        return render(request, 'login.html', {'hj':'account created successfully!!'})
+    else:
+        return render(request, 'otp.html', {'msg' :'Incorrect OTP!!'})
 
 
 # CRUD = Create read Update Delete
