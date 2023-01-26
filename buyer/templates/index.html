@@ -65,14 +65,31 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 					<li>
 						<span class="fa fa-phone" aria-hidden="true"></span> 001 234 5678
 					</li>
+					
+					{% if buyer_data %}
+
 					<li>
-						<a href="#" data-toggle="modal" data-target="#myModal1">
-							<span class="fa fa-unlock-alt" aria-hidden="true"></span> Sign In </a>
+						<a href="">
+							<span  aria-hidden="true"></span>{{buyer_data.first_name}}</a>
 					</li>
 					<li>
-						<a href="#" data-toggle="modal" data-target="#myModal2">
-							<span class="fa fa-pencil-square-o" aria-hidden="true"></span> Sign Up </a>
+						<a href="{% url 'logout' %}">
+							<span aria-hidden="true"></span> Logout</a>
 					</li>
+
+					{% else %}
+					
+					<li>
+						<a href="{% url 'login' %}">
+							<span class="fa fa-unlock-alt" aria-hidden="true"></span> Login </a>
+					</li>
+					<li>
+						<a href="{% url 'register' %}" >
+							<span class="fa fa-pencil-square-o" aria-hidden="true"></span> Register </a>
+					</li>
+
+					{% endif %}
+
 				</ul>
 				<!-- //header lists -->
 				<!-- search -->

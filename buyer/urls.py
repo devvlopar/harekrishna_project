@@ -10,6 +10,8 @@ urlpatterns = [
     path('register/', register, name="register"),
     path('otp/', otp, name="otp"),
     path('login/', login, name="login"),
+    path('logout/', logout, name="logout"),
+
 
 
 

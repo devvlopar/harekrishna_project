@@ -9,6 +9,9 @@ class Buyer(models.Model):
     password = models.CharField(max_length=50)
     address = models.CharField(max_length=100)
 
+    def __str__(self):
+        return self.email
+
 
 # models = database ke andar Tables = models.py ke andar class
 # SQL : structured query langauge
