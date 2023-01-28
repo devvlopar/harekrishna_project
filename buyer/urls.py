@@ -11,6 +11,8 @@ urlpatterns = [
     path('otp/', otp, name="otp"),
     path('login/', login, name="login"),
     path('logout/', logout, name="logout"),
+    path('faqs/', faqs, name="faqs"),
+
 
 
 

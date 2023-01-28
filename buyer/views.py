@@ -15,7 +15,8 @@ def index(request):
 
 
 def about(request):
-    return render(request, 'about.html')
+    buyer_obj = Buyer.objects.get(email = request.session['email'])
+    return render(request, 'about.html', {'buyer_data': buyer_obj})
 
 def checkout(request):
     return render(request, 'checkout.html')
@@ -87,6 +88,8 @@ def login(request):
             if user_obj.password == request.POST['password']:
                 request.session['email'] = request.POST['email'] #login ho gaya/ session chalu ho gaya
                 return redirect('index')
+            else:
+                return render(request, 'login.html', {'hj':'Invalid Password'})
         except:
             return render(request, 'login.html', {'hj':'Email Is Not Registered!!'})
 
@@ -95,4 +98,6 @@ def logout(request):
     del request.session['email']
     return redirect('index')
 
-# CRUD = Create read Update Delete
+def faqs(request):
+    buyer_obj = Buyer.objects.get(email = request.session['email'])
+    return render(request, 'faqs.html', {'buyer_data': buyer_obj})
