@@ -99,5 +99,8 @@ def logout(request):
     return redirect('index')
 
 def faqs(request):
-    buyer_obj = Buyer.objects.get(email = request.session['email'])
-    return render(request, 'faqs.html', {'buyer_data': buyer_obj})
+    try:
+        buyer_obj = Buyer.objects.get(email = request.session['email'])
+        return render(request, 'faqs.html', {'buyer_data': buyer_obj})
+    except:
+        return render(request, 'faqs.html')
