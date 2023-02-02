@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
-from .models import Seller
+from .models import *
+from django.http import HttpResponse
 
 # Create your views here.
 def seller_index(request):
@@ -35,3 +36,21 @@ def seller_logout(request):
 
 def seller_edit(request):
     return render(request, 'seller_edit_profile.html')
+
+
+def add_product(request):
+    if request.method == 'GET':
+        sellerdata = Seller.objects.get(email = request.session['seller_email'])
+        return render(request, 'add_product.html', {'seller_data':sellerdata})
+    else:
+        seller_obj = Seller.objects.get(email = request.session['seller_email'])
+        Products.objects.create(
+            product_name = request.POST['product_name'],
+            des = request.POST['des'],
+            price = request.POST['price'],
+            product_stock = request.POST['product_stock'],
+            pic = request.FILES['pic'],
+            seller = seller_obj
+        )
+        return HttpResponse('Ho gya create')
+    

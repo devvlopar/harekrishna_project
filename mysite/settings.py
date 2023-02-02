@@ -131,5 +131,6 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = 'devang.tops@gmail.com'
 EMAIL_HOST_PASSWORD = 'setorjajtqjcnxnm'
 
-MEDIA_ROOT = '/media/'
-MEDIA_URL =  os.path.join(BASE_DIR, 'media/')
+ 
+MEDIA_ROOT =  os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
