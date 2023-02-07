@@ -4,12 +4,15 @@ from .models import Buyer
 from django.core.mail import send_mail
 from random import randint
 from django.conf import settings
+from seller.models import *
 # Create your views here.
 
 def index(request):
     try:
         user_data = Buyer.objects.get(email = request.session['email'])
-        return render(request, 'index.html', {'buyer_data': user_data})
+        all_products = Products.objects.all()
+       
+        return render(request, 'index.html', {'buyer_data': user_data, 'all_products': all_products})
     except:
         return render(request, 'index.html')
 

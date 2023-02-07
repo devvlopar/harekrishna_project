@@ -54,3 +54,14 @@ def add_product(request):
         )
         return HttpResponse('Ho gya create')
     
+def my_products(request):
+    seller_data = Seller.objects.get(email = request.session['seller_email'])
+    seller_products = Products.objects.filter(seller = seller_data)
+    return render(request, 'my_products.html', {'seller_data': seller_data, 'seller_products': seller_products })
+
+
+def delete_product(request,pk):
+    kaam_tamaam_prod = Products.objects.get(id= pk)
+    kaam_tamaam_prod.delete()
+    return redirect('my_products')
+    
