@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from .models import Buyer
+from .models import *
 from django.core.mail import send_mail
 from random import randint
 from django.conf import settings
@@ -8,13 +8,12 @@ from seller.models import *
 # Create your views here.
 
 def index(request):
+    all_products = Products.objects.all()
     try:
         user_data = Buyer.objects.get(email = request.session['email'])
-        all_products = Products.objects.all()
-       
         return render(request, 'index.html', {'buyer_data': user_data, 'all_products': all_products})
     except:
-        return render(request, 'index.html')
+        return render(request, 'index.html', {'all_products': all_products})
 
 
 def about(request):
@@ -107,3 +106,30 @@ def faqs(request):
         return render(request, 'faqs.html', {'buyer_data': buyer_obj})
     except:
         return render(request, 'faqs.html')
+
+def add_to_cart(request,pk):
+    try:
+        buyer_obj = Buyer.objects.get(email = request.session['email'])
+        Cart.objects.create(
+            product = Products.objects.get(id = pk),
+            buyer = buyer_obj
+        )
+        return redirect('index')
+    except:
+        return redirect('login')
+    
+def cart(request):
+    try:
+        buyer_obj = Buyer.objects.get(email = request.session['email'])
+        cart_data = Cart.objects.filter(buyer = buyer_obj)
+        total_price = 0
+        for i in cart_data:
+            total_price += i.product.price
+        return render(request, 'cart.html', {'buyer_data': buyer_obj, 'cart_data':cart_data, 'p_count': len(cart_data), 'total_amount':total_price})
+    except:
+        return redirect('login')
+    
+def delete_cart(request,pk):
+    cart_obj = Cart.objects.get(id=pk)
+    cart_obj.delete()
+    return redirect('cart')

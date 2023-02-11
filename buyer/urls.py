@@ -12,6 +12,10 @@ urlpatterns = [
     path('login/', login, name="login"),
     path('logout/', logout, name="logout"),
     path('faqs/', faqs, name="faqs"),
+    path('cart/', cart, name="cart"),
+    path('add_to_cart/<int:pk>', add_to_cart, name="add_to_cart"),
+    path('delete_cart/<int:pk>', delete_cart, name="delete_cart")
+
 
 
 

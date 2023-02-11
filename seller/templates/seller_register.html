@@ -25,7 +25,7 @@
     <div class="card-body register-card-body">
       <p class="login-box-msg">Register a new membership</p>
 
-      <form action="{% url 'seller_register' %}" method="post">
+      <form action="{% url 'seller_register' %}" method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="input-group mb-3">
           <input type="text" class="form-control" name="full_name" placeholder="Full name">
@@ -53,6 +53,22 @@
         </div>
         <div class="input-group mb-3">
           <input type="password" class="form-control" name="repassword" placeholder="Retype password">
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-lock"></span>
+            </div>
+          </div>
+        </div>
+        <div class="input-group mb-3">
+          <input type="text" class="form-control" name="gst_no" placeholder="Enter Your GST Number">
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-lock"></span>
+            </div>
+          </div>
+        </div>
+        <div class="input-group mb-3">
+          <input type="file" class="form-control" name="pic">
           <div class="input-group-append">
             <div class="input-group-text">
               <span class="fas fa-lock"></span>

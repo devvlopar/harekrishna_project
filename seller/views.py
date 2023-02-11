@@ -1,6 +1,9 @@
 from django.shortcuts import render, redirect
 from .models import *
 from django.http import HttpResponse
+from django.core.mail import send_mail
+from django.conf import settings
+from random import randint
 
 # Create your views here.
 def seller_index(request):
@@ -52,7 +55,7 @@ def add_product(request):
             pic = request.FILES['pic'],
             seller = seller_obj
         )
-        return HttpResponse('Ho gya create')
+        return render(request, 'add_product.html', {'seller_data':seller_obj, 'msg': 'Successlly Added!!!'})
     
 def my_products(request):
     seller_data = Seller.objects.get(email = request.session['seller_email'])
@@ -65,3 +68,48 @@ def delete_product(request,pk):
     kaam_tamaam_prod.delete()
     return redirect('my_products')
     
+def edit_product(request, pid):
+    s_product = Products.objects.get(id = pid)
+    if request.method == 'GET':
+        seller_data = Seller.objects.get(email = request.session['seller_email'])
+        return render(request, 'edit_product.html', {'product_data': s_product,'seller_data': seller_data})
+    else:
+        s_product.product_name = request.POST['product_name']
+        s_product.price = request.POST['price']
+        s_product.des = request.POST['des']
+        s_product.product_stock = request.POST['product_stock']
+        if request.FILES:
+            s_product.pic = request.FILES['pic']
+        s_product.save()
+        return redirect('my_products')
+        
+def seller_register(request):
+    if request.method == 'GET':
+        return render(request, 'seller_register.html')
+    else:
+        s = "Registration!!!"
+        global c_otp
+        global files, user_dict
+        user_dict = {
+            'full_name' : request.POST['full_name'],
+            'email' : request.POST['email'],
+            'password' : request.POST['password'],
+            'gst_no' : request.POST['gst_no']
+        }
+        c_otp = randint(1000, 9999)
+        files = request.FILES['pic']
+        print(c_otp)        
+        return render(request, 'seller_otp.html')
+    
+
+def seller_otp(request):
+    Seller.objects.create(
+        full_name = user_dict['full_name'] ,
+        email = user_dict['email'],
+        password = user_dict['password'],
+        gst_no = user_dict['gst_no'],
+        pic = files
+    )
+    return render(request, 'seller_register.html')
+
+
