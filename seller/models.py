@@ -7,6 +7,7 @@ class Seller(models.Model):
     password = models.CharField(max_length=50)
     gst_no = models.CharField(max_length=15)
     pic = models.FileField(upload_to= 'profile_pics', default= 'sad.jpg')
+    
 
 
     def __str__(self) -> str:
@@ -23,3 +24,17 @@ class Products(models.Model):
 
     def __str__(self):
         return self.product_name
+    
+
+class MyOrders(models.Model):
+    var1 = [
+        (1, 'Pending'),
+        (2, 'Dispatched')
+    ]
+
+    buyer = models.ForeignKey(to="buyer.Buyer", on_delete=models.CASCADE)
+    product = models.ForeignKey(Products, on_delete=models.CASCADE)
+    status = models.CharField(max_length=40, choices=var1)
+
+    def __str__(self):
+        return self.buyer.first_name

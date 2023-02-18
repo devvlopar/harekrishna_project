@@ -9,7 +9,8 @@ from random import randint
 def seller_index(request):
     try:
         seller=Seller.objects.get(email=request.session['seller_email'])
-        return render(request, 'seller_index.html',{'seller_data':seller})
+        mere_orders = MyOrders.objects.filter(product__seller = seller )
+        return render(request, 'seller_index.html',{'seller_data':seller, 'my_orders': mere_orders})
     except:
         return render(request, 'seller_login.html')
     
@@ -113,3 +114,8 @@ def seller_otp(request):
     return render(request, 'seller_register.html')
 
 
+def dispatched(request,pk):
+    m_row = MyOrders.objects.get(id= pk)
+    m_row.status = 2
+    m_row.save()
+    return redirect('seller_index')

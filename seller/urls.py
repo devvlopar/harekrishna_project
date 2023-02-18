@@ -11,6 +11,7 @@ urlpatterns = [
     path('my_products/', my_products, name='my_products'),
     path('delete_product/<int:pk>', delete_product, name='delete_product'),
     path('edit_product/<int:pid>', edit_product, name='edit_product'),
+    path('dispatched/<int:pk>', dispatched, name='dispatched')
 
 
 

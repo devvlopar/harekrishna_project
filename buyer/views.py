@@ -5,6 +5,9 @@ from django.core.mail import send_mail
 from random import randint
 from django.conf import settings
 from seller.models import *
+import razorpay
+from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponseBadRequest
 # Create your views here.
 
 def index(request):
@@ -118,14 +121,49 @@ def add_to_cart(request,pk):
     except:
         return redirect('login')
     
+razorpay_client = razorpay.Client(
+auth=(settings.RAZOR_KEY_ID, settings.RAZOR_KEY_SECRET))
+
 def cart(request):
     try:
         buyer_obj = Buyer.objects.get(email = request.session['email'])
         cart_data = Cart.objects.filter(buyer = buyer_obj)
+        global total_price
         total_price = 0
         for i in cart_data:
             total_price += i.product.price
-        return render(request, 'cart.html', {'buyer_data': buyer_obj, 'cart_data':cart_data, 'p_count': len(cart_data), 'total_amount':total_price})
+
+        #RazorPay Code
+
+        currency = 'INR'
+        if total_price == 0:
+            total_price = 10
+        amount = total_price * 100  # Rs. 200
+
+        # Create a Razorpay Order
+        razorpay_order = razorpay_client.order.create(dict(amount=amount,
+                                                        currency=currency,
+                                                        payment_capture='0'))
+
+        # order id of newly created order.
+        razorpay_order_id = razorpay_order['id']
+        callback_url = 'paymenthandler/'
+
+        # we need to pass these details to frontend.
+        context = {}
+        context['razorpay_order_id'] = razorpay_order_id
+        context['razorpay_merchant_key'] = settings.RAZOR_KEY_ID
+        context['razorpay_amount'] = amount
+        context['currency'] = currency
+        context['callback_url'] = callback_url
+        context['buyer_data'] = buyer_obj
+        context['cart_data'] = cart_data
+        context['p_count'] = len(cart_data)
+        context['total_amount'] = total_price
+
+        return render(request, 'cart.html', context=context)
+ 
+
     except:
         return redirect('login')
     
@@ -133,3 +171,63 @@ def delete_cart(request,pk):
     cart_obj = Cart.objects.get(id=pk)
     cart_obj.delete()
     return redirect('cart')
+
+
+
+
+
+@csrf_exempt
+def paymenthandler(request):
+ 
+    # only accept POST request.
+    if request.method == "POST":
+        try:
+           
+            # get the required parameters from post request.
+            payment_id = request.POST.get('razorpay_payment_id', '')
+            razorpay_order_id = request.POST.get('razorpay_order_id', '')
+            signature = request.POST.get('razorpay_signature', '')
+            params_dict = {
+                'razorpay_order_id': razorpay_order_id,
+                'razorpay_payment_id': payment_id,
+                'razorpay_signature': signature
+            }
+ 
+            # verify the payment signature.
+            result = razorpay_client.utility.verify_payment_signature(
+                params_dict)
+            if result is not None:
+                amount = total_price * 100  # Rs. 200
+                try:
+ 
+                    # capture the payemt
+                    razorpay_client.payment.capture(payment_id, amount)
+                    b_obj = Buyer.objects.get(email = request.session['email'])
+                    c_list = Cart.objects.filter(buyer = b_obj)
+                    
+                    for i in c_list:
+                        MyOrders.objects.create(
+                            buyer = b_obj,
+                            product = i.product,
+                            status = 1
+                        )
+                        
+                        i.delete()
+                    
+                    # render success page on successful caputre of payment
+                    return render(request, 'success.html')
+                except:
+ 
+                    # if there is an error while capturing payment.
+                    return render(request, 'fail.html')
+            else:
+ 
+                # if signature verification fails.
+                return render(request, 'fail.html')
+        except:
+ 
+            # if we don't find the required parameters in POST data
+            return HttpResponseBadRequest()
+    else:
+       # if other than POST request is made.
+        return HttpResponseBadRequest()
