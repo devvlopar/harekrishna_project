@@ -35,23 +35,20 @@
 			</h3>
 			<!-- //tittle heading -->
 			<div class="checkout-right">
-				<h4>Your shopping cart contains:
-					<span>{{p_count}} Products</span>
+				<h4>Your shopping cart contains :
+					<span id="cccount">{{p_count}} </span>Products
 				</h4>
 				<div class="table-responsive">
 					<table class="timetable_sub">
 						<thead>
 							<tr>
-								
 								<th>Product</th>
-								
 								<th>Product Name</th>
-
 								<th>Price</th>
 								<th>Remove</th>
 							</tr>
 						</thead>
-						<tbody>
+						<tbody id="tttbody" >
 
 							{% for row in cart_data %}
 							<tr class="rem1">
@@ -65,7 +62,7 @@
 								<td class="invert">${{row.product.price}}</td>
 								<td class="invert">
 									<div class="rem">
-										<button><a href="{% url 'delete_cart' row.id %}" >Delete</a></button>
+										<button onclick="del_cart_item({{row.id}})" >Delete</button>
 									</div>
 								</td>
 							</tr>
@@ -76,7 +73,7 @@
 			</div>
 			<div class="checkout-left">
 				<div class="address_form_agile">
-					<h3>Total Amount to Pay: ${{total_amount}}</h3>
+					<h3>Total Amount to Pay:</h3><h3 id="tttotal" >${{total_amount}}</h3>
 					
 					<div class="checkout-right-basket">
 						<button id="pay-btn" >Make A Payment</button>
@@ -118,5 +115,59 @@
       e.preventDefault();
     };
   </script>
-	
+
+  <script>
+	function del_cart_item(cid){
+		let d1 = { 
+			c_item : cid
+		}
+
+		$.ajax({
+			data : d1,
+			method : 'GET',
+			url : "{% url 'del_cart_item' %}",
+			success: function(response){
+				
+				let s = ''
+				let cdata = response.cart_data
+				for(i = 0; i < cdata.length; i ++){
+					s += `<tr class="rem1">
+								
+								<td class="invert-image">
+									<a href="single2.html">
+										<img src="${cdata[i].pic}" style="max-height: 50px;" alt=" " class="img-responsive">
+									</a>
+								</td>
+								<td class="invert">${cdata[i].pname}</td>
+								<td class="invert">${cdata[i].price}</td>
+								<td class="invert">
+									<div class="rem">
+										<button  onclick="del_cart_item(${cdata[i].id})" >Delete</button>
+									</div>
+								</td>
+							</tr>`
+				}
+
+				$("#tttbody").html(s)
+				$("#cccount").html(response.p_count)
+				$('#tttotal').html(response.total_amount)
+				
+				var options = {
+				key: response.razorpay_merchant_key,
+				amount: response.razorpay_amount,
+				currency: response.currency,
+				name: "Ecommerce",
+				order_id: response.razorpay_order_id,
+				callback_url: response.callback_url,
+	 			};
+	  			var rzp1 = new Razorpay(options);
+				document.getElementById("pay-btn").onclick = function (e) {
+				rzp1.open();
+				e.preventDefault();
+				};
+			}
+		})
+	}
+  </script>
+
 {% endblock %}

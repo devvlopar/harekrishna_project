@@ -339,7 +339,7 @@
 										
 									</div>
 									<div class="snipcart-details top_brand_home_details item_add single-item hvr-outline-out">
-										<button><a href="{% url 'add_to_cart' i.id %}" > Add to Cart</a></button>
+										<button onclick="add_to_cart({{i.id}})" >Add to Cart</button>
 									</div>
 
 								</div>
@@ -1010,5 +1010,19 @@
 		</div>
 	</div>
 	<!-- //newsletter -->
-	<!-- footer -->
+	<script>
+		function add_to_cart(pid){
+			let dddata = {
+				id : pid
+			}
+			$.ajax({
+				url : '/add_to_cart/',
+				data: dddata,
+				method: 'GET',
+				success:function(response){
+						if(res)
+				}
+			})
+		}
+	</script>
 {% endblock %}

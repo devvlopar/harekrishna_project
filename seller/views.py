@@ -38,6 +38,7 @@ def seller_logout(request):
     except:
         return redirect('seller_login')
 
+
 def seller_edit(request):
     return render(request, 'seller_edit_profile.html')
 
@@ -57,7 +58,8 @@ def add_product(request):
             seller = seller_obj
         )
         return render(request, 'add_product.html', {'seller_data':seller_obj, 'msg': 'Successlly Added!!!'})
-    
+
+
 def my_products(request):
     seller_data = Seller.objects.get(email = request.session['seller_email'])
     seller_products = Products.objects.filter(seller = seller_data)

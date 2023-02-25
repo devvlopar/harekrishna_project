@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from .models import *
 from django.core.mail import send_mail
 from random import randint
@@ -110,16 +110,26 @@ def faqs(request):
     except:
         return render(request, 'faqs.html')
 
-def add_to_cart(request,pk):
+def add_to_cart(request):
     try:
         buyer_obj = Buyer.objects.get(email = request.session['email'])
+        p_obj = Products.objects.get(id = request.GET['id'])
         Cart.objects.create(
-            product = Products.objects.get(id = pk),
-            buyer = buyer_obj
+            buyer = buyer_obj,
+            product = p_obj
         )
-        return redirect('index')
+        return JsonResponse({'msg':'Successfully Added!!'})
     except:
-        return redirect('login')
+        return JsonResponse({'msg':'login nahi kiya hai'})
+   
+    # try:
+    #     Cart.objects.create(
+    #         product = Products.objects.get(id = pk),
+    #         buyer = buyer_obj
+    #     )
+    #     return redirect('index')
+    # except:
+    #     return redirect('login')
     
 razorpay_client = razorpay.Client(
 auth=(settings.RAZOR_KEY_ID, settings.RAZOR_KEY_SECRET))
@@ -167,10 +177,7 @@ def cart(request):
     except:
         return redirect('login')
     
-def delete_cart(request,pk):
-    cart_obj = Cart.objects.get(id=pk)
-    cart_obj.delete()
-    return redirect('cart')
+
 
 
 
@@ -231,3 +238,56 @@ def paymenthandler(request):
     else:
        # if other than POST request is made.
         return HttpResponseBadRequest()
+    
+
+
+
+
+def del_cart_item(request):
+    b_obj = Buyer.objects.get(email = request.session['email'])
+    c_row = Cart.objects.get(id = request.GET['c_item'])
+    c_row.delete()
+    cart_data = Cart.objects.filter(buyer = b_obj)
+    final_list = []
+    p_count = len(cart_data)
+
+    for s_cart_item in cart_data:
+        final_list.append({'id': s_cart_item.id, 
+                           'pname' : s_cart_item.product.product_name,
+                           'price' : s_cart_item.product.price,
+                           'pic': s_cart_item.product.pic.url})
+
+    
+    #NIche  no code payment amount update karva mate chhe
+    total_price = 0
+    for i in cart_data:
+        total_price += i.product.price
+
+    #RazorPay Code
+
+    currency = 'INR'
+    if total_price == 0:
+        total_price = 10
+    amount = total_price * 100  # Rs. 200
+
+    # Create a Razorpay Order
+    razorpay_order = razorpay_client.order.create(dict(amount=amount,
+                                                    currency=currency,
+                                                    payment_capture='0'))
+
+    # order id of newly created order.
+    razorpay_order_id = razorpay_order['id']
+    callback_url = 'paymenthandler/'
+
+    # we need to pass these details to frontend.
+    context = {}
+    context['razorpay_order_id'] = razorpay_order_id
+    context['razorpay_merchant_key'] = settings.RAZOR_KEY_ID
+    context['razorpay_amount'] = amount
+    context['currency'] = currency
+    context['callback_url'] = callback_url
+    context['total_amount'] = total_price
+
+    context.update({'msg':'Successfully deleted!!', 'cart_data': final_list, 'p_count':p_count})
+        
+    return JsonResponse(context)
